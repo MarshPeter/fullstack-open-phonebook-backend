@@ -3,9 +3,9 @@ const morgan = require("morgan");
 
 let persons = [
     {
+        number: "040-123456",
         id: 1,
         name: "Arto Hellas",
-        number: "040-123456",
     },
     {
         id: 2,
@@ -29,7 +29,16 @@ const app = express();
 // middleware
 
 app.use(express.json());
-app.use(morgan("tiny"));
+
+morgan.token("custom", function (req, res) {
+    return `${JSON.stringify(req.body)}`;
+});
+
+app.use(
+    morgan(
+        ":method :url :status :res[content-length] - :response-time ms :custom"
+    )
+);
 
 app.get("/api/persons", (request, response) => {
     response.json(persons);
