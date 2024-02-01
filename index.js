@@ -29,6 +29,18 @@ app.get("/api/persons", (request, response) => {
     response.json(persons);
 });
 
+app.get("/api/persons/:id", (request, response) => {
+    const id = Number(request.params.id);
+
+    const matchedPerson = persons.find((person) => person.id === id);
+
+    if (matchedPerson) {
+        response.json(matchedPerson);
+    }
+
+    response.status(404).end();
+});
+
 app.get("/info", (request, response) => {
     const currentTime = new Date();
     const peopleCount = persons.length;
