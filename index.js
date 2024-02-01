@@ -25,6 +25,10 @@ let persons = [
 
 const app = express();
 
+// middleware
+
+app.use(express.json());
+
 app.get("/api/persons", (request, response) => {
     response.json(persons);
 });
@@ -54,9 +58,30 @@ app.delete("/api/persons/:id", (request, response) => {
     const id = Number(request.params.id);
 
     persons = persons.filter((person) => person.id !== id);
-    console.log(persons);
 
     response.status(204).end();
+});
+
+app.post("/api/persons", (request, response) => {
+    const body = request.body;
+
+    if (!body.name || !body.number) {
+        return response.status(400).json({
+            error: "content missing",
+        });
+    }
+
+    const newId = Math.floor(Math.random() * 1000000);
+
+    const person = {
+        name: body.name,
+        number: body.number,
+        id: newId,
+    };
+
+    persons = persons.concat(person);
+
+    response.json(person);
 });
 
 const PORT = 3001;
