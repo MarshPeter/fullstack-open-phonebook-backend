@@ -32,6 +32,7 @@ morgan.token("custom", function (req, res) {
 });
 
 // middleware
+app.use(express.static("dist"));
 app.use(express.json());
 app.use(
     morgan(
