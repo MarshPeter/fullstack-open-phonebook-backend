@@ -87,23 +87,14 @@ app.post("/api/persons", (request, response) => {
         });
     }
 
-    if (persons.find((person) => person.name === body.name)) {
-        return response.status(400).json({
-            error: "name must be unique",
-        });
-    }
-
-    const newId = Math.floor(Math.random() * 1000000);
-
-    const person = {
-        name: body.name,
+    const person = new Person({
         number: body.number,
-        id: newId,
-    };
+        name: body.name,
+    });
 
-    persons = persons.concat(person);
-
-    response.json(person);
+    person.save().then((savedPerson) => {
+        response.json(savedPerson);
+    });
 });
 
 function unknownEndpoint(request, response) {
