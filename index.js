@@ -4,29 +4,6 @@ const morgan = require("morgan");
 const cors = require("cors");
 const Person = require("./models/person");
 
-let persons = [
-    {
-        number: "040-123456",
-        id: 1,
-        name: "Arto Hellas",
-    },
-    {
-        id: 2,
-        name: "Ada Lovelace",
-        number: "39-44-5323523",
-    },
-    {
-        id: 3,
-        name: "Dan Abramov",
-        number: "12-43-234345",
-    },
-    {
-        id: 4,
-        name: "Mary Poppendieck",
-        number: "39-23-6423122",
-    },
-];
-
 const app = express();
 
 morgan.token("custom", function (req, res) {
@@ -43,34 +20,49 @@ app.use(
 );
 app.use(cors());
 
-app.get("/api/persons", (request, response) => {
-    Person.find({}).then((people) => {
-        response.json(people);
-    });
+app.get("/api/persons", (request, response, next) => {
+    Person.find({})
+        .then((people) => {
+            response.json(people);
+        })
+        .catch((error) => {
+            next(error);
+        });
 });
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
     const id = request.params.id;
 
-    Person.find({ _id: id }).then((people) => {
-        if (people == []) {
-            response.status(404).end();
-        }
-
-        response.json(people);
-    });
+    Person.findById(id)
+        .then((person) => {
+            if (person) {
+                response.json(person);
+            } else {
+                response.status(404).end();
+            }
+        })
+        .catch((error) => {
+            next(error);
+        });
 });
 
-app.get("/info", (request, response) => {
+app.get("/info", (request, response, next) => {
     const currentTime = new Date();
-    const peopleCount = persons.length;
 
-    response.send(
-        `<p>Phonebook has info for ${peopleCount} people</p><p>${currentTime.toString()}</p>`
-    );
+    Person.find({})
+        .then((people) => {
+            const peopleCount = people.length;
+
+            response.send(
+                `<p>Phonebook has info for ${peopleCount} people</p><p>${currentTime.toString()}</p>`
+            );
+        })
+        .catch((error) => {
+            next(error);
+        });
 });
 
-app.put("/api/persons/:id", (request, response) => {
+app.put("/api/persons/:id", (request, response, next) => {
     const id = request.params.id;
     const body = request.body;
 
@@ -86,7 +78,7 @@ app.put("/api/persons/:id", (request, response) => {
         .catch((error) => next(error));
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
     const id = request.params.id;
 
     Person.findByIdAndDelete(id)
@@ -96,7 +88,7 @@ app.delete("/api/persons/:id", (request, response) => {
         .catch((error) => next(error));
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
     const body = request.body;
 
     if (!body.name || !body.number) {
