@@ -71,11 +71,13 @@ app.get("/info", (request, response) => {
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-    const id = Number(request.params.id);
+    const id = request.params.id;
 
-    persons = persons.filter((person) => person.id !== id);
-
-    response.status(204).end();
+    Person.findByIdAndDelete(id)
+        .then((result) => {
+            response.status(204).end();
+        })
+        .catch((error) => next(error));
 });
 
 app.post("/api/persons", (request, response) => {
@@ -102,6 +104,16 @@ function unknownEndpoint(request, response) {
 }
 
 app.use(unknownEndpoint);
+
+function errorHandler(error, request, response, next) {
+    console.log(error.message);
+
+    if ((error.name = "CastError")) {
+        return response.status(400).send({ error: "malformatted id" });
+    }
+
+    next(error);
+}
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
